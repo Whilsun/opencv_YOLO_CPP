@@ -101,7 +101,7 @@ int main() {
     std::string classesFile = "coco.names";
     std::ifstream ifs(classesFile.c_str());
     std::string line;
-    while (getline(ifs, line)) classes.push_back(line);
+    while (getline(ifs, line)) { classes.push_back(line); }
     
     // Give the configuration and weight files for the model
     std::string modelConfiguration = "yolov2-tiny.cfg";
