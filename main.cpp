@@ -7,15 +7,13 @@ const int inpHeight = 416;
 
 std::vector<std::string> classes;
 // Draw the predicted bounding box
-void drawPred(int classId, float conf, int left, int top, int right, int bottom, cv::Mat& frame)
-{
+void drawPred(int classId, float conf, int left, int top, int right, int bottom, cv::Mat& frame) {
     //Draw a rectangle displaying the bounding box
     cv::rectangle(frame, cv::Point(left, top), cv::Point(right, bottom), cv::Scalar(0, 0, 255));
      
     //Get the label for the class name and its confidence
     std::string label = cv::format("%.2f", conf);
-    if (!classes.empty())
-    {
+    if (!classes.empty()) {
         CV_Assert(classId < (int)classes.size());
         label = classes[classId] + ":" + label;
     }
@@ -29,26 +27,23 @@ void drawPred(int classId, float conf, int left, int top, int right, int bottom,
 }
 
 // Remove the bounding boxes with low confidence using non-maxima suppression
-void postprocess(cv::Mat& frame, const std::vector<cv::Mat>& outs){
+void postprocess(cv::Mat& frame, const std::vector<cv::Mat>& outs) {
     std::vector<int> classIds;
     std::vector<float> confidences;
     std::vector<cv::Rect> boxes;
      
-    for (size_t i = 0; i < outs.size(); ++i)
-    {
+    for (size_t i = 0; i < outs.size(); ++i) {
         // Scan through all the bounding boxes output from the network and keep only the
         // ones with high confidence scores. Assign the box's class label as the class
         // with the highest score for the box.
         float* data = (float*)outs[i].data;
-        for (int j = 0; j < outs[i].rows; ++j, data += outs[i].cols)
-        {
+        for (int j = 0; j < outs[i].rows; ++j, data += outs[i].cols) {
             cv::Mat scores = outs[i].row(j).colRange(5, outs[i].cols);
             cv::Point classIdPoint;
             double confidence;
             // Get the value and location of the maximum score
             cv::minMaxLoc(scores, 0, &confidence, 0, &classIdPoint);
-            if (confidence > confThreshold)
-            {
+            if (confidence > confThreshold) {
                 int centerX = (int)(data[0] * frame.cols);
                 int centerY = (int)(data[1] * frame.rows);
                 int width = (int)(data[2] * frame.cols);
@@ -67,8 +62,7 @@ void postprocess(cv::Mat& frame, const std::vector<cv::Mat>& outs){
     // lower confidences
     std::vector<int> indices;
     cv::dnn::NMSBoxes(boxes, confidences, confThreshold, nmsThreshold, indices);
-    for (size_t i = 0; i < indices.size(); ++i)
-    {
+    for (size_t i = 0; i < indices.size(); ++i) {
         int idx = indices[i];
         cv::Rect box = boxes[idx];
         drawPred(classIds[idx], confidences[idx], box.x, box.y,
@@ -77,10 +71,9 @@ void postprocess(cv::Mat& frame, const std::vector<cv::Mat>& outs){
 }
 
 // Get the names of the output layers
-std::vector<std::string> getOutputsNames(const cv::dnn::Net& net){
+std::vector<std::string> getOutputsNames(const cv::dnn::Net& net) {
     static std::vector<std::string> names;
-    if (names.empty())
-    {
+    if (names.empty()){
         //Get the indices of the output layers, i.e. the layers with unconnected outputs
         std::vector<int> outLayers = net.getUnconnectedOutLayers();
          
